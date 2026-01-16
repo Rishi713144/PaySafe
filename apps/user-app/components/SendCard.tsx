@@ -8,41 +8,89 @@ import { useState } from "react";
 import { p2pTransfer } from "../app/lib/actions/p2pTransfer";
 
 export function SendCard() {
-    const [number, setNumber] = useState("");
-    const [amount, setAmount] = useState("");
+  const [number, setNumber] = useState("");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    return (
-        <div className="h-[90vh]">
-            <Center>
-                <Card title="Send">
-                    <div className="min-w-72 pt-2">
-                        <TextInput
-                            placeholder={"Number"}
-                            label="Number"
-                            onChange={(value) => setNumber(value)}
-                        />
-                        <TextInput
-                            placeholder={"Amount"}
-                            label="Amount"
-                            onChange={(value) => setAmount(value)}
-                        />
-                        <div className="pt-4 flex justify-center">
-                            <Button onClick={async () => {
-                                try {
-                                    await p2pTransfer(number, Number(amount) * 100); // adjust multiplier if needed
-                                    alert("Transfer Successful!");
-                                    setNumber("");
-                                    setAmount("");
-                                } catch (err) {
-                                    alert("Transfer Failed. Please check the details and try again.");
-                                }
-                            }}>
-                                Send
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-            </Center>
+  const isDisabled = !number || !amount || loading;
+
+  const handleTransfer = async () => {
+    if (isDisabled) return;
+
+    // Reset error
+    setError("");
+
+    // Validate amount
+    const amountValue = Number(amount);
+    if (isNaN(amountValue) || amountValue <= 0) {
+      setError("Please enter a valid amount");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await p2pTransfer(number, amountValue * 100);
+      
+      if (result.success) {
+        alert("Transfer successful");
+        setNumber("");
+        setAmount("");
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card title="Send Money">
+      <div className="space-y-4">
+        <TextInput
+          label="Amount"
+          placeholder="Enter amount"
+          type="number"
+          value={amount}
+          onChange={(value) => {
+            setError("");
+            setAmount(value);
+          }}
+          disabled={loading}
+        />
+        <TextInput
+          label="Phone Number"
+          placeholder="Enter recipient's number"
+          type="text"
+          value={number}
+          onChange={(value) => {
+            setError("");
+            setNumber(value);
+          }}
+          disabled={loading}
+        />
+        
+        {error && (
+          <div className="text-red-500 text-sm p-2 bg-red-50 rounded border border-red-200">
+            {error}
+          </div>
+        )}
+
+        <Center>
+          <Button
+            onClick={handleTransfer}
+            disabled={isDisabled}
+          >
+            {loading ? "Processing..." : "Send Money"}
+          </Button>
+        </Center>
+
+        <div className="text-sm text-gray-500 text-center">
+          Transfers are processed instantly and securely
         </div>
-    );
+      </div>
+    </Card>
+  );
 }

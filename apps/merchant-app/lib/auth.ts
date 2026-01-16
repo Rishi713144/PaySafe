@@ -11,15 +11,15 @@ export const authOptions = {
     callbacks: {
       async signIn({ user, account }: {
         user: {
-          email: string;
-          name: string
+          email?: string | null;
+          name?: string | null
         },
         account: {
-          provider: "google" | "github"
-        }
+          provider: string
+        } | null
       }) {
         console.log("hi signin")
-        if (!user || !user.email) {
+        if (!user || !user.email || !account) {
           return false;
         }
 
