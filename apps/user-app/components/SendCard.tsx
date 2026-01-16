@@ -52,24 +52,18 @@ export function SendCard() {
         <TextInput
           label="Amount"
           placeholder="Enter amount"
-          type="number"
-          value={amount}
           onChange={(value) => {
             setError("");
             setAmount(value);
           }}
-          disabled={loading}
         />
         <TextInput
           label="Phone Number"
           placeholder="Enter recipient's number"
-          type="text"
-          value={number}
           onChange={(value) => {
             setError("");
             setNumber(value);
           }}
-          disabled={loading}
         />
         
         {error && (

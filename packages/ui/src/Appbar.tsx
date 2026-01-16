@@ -50,9 +50,7 @@ export const Appbar = ({
                     )}
                     
                     <Button 
-                        variant={user ? "outline" : "primary"} 
                         onClick={user ? onSignout : onSignin}
-                        className={user ? "border-slate-200 text-slate-700 hover:bg-slate-50" : "bg-indigo-600 hover:bg-indigo-700"}
                     >
                         {user ? "Logout" : "Sign In"}
                     </Button>
