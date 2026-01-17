@@ -10,8 +10,7 @@ export function AppbarClient() {
   return (
    <div>
       <Appbar onSignin={signIn} onSignout={async () => {
-        await signOut({ redirect: false });
-        window.location.href = "/api/auth/signin";
+        await signOut({ callbackUrl: "/" });
       }} user={session.data?.user} />
    </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Download,
@@ -12,6 +14,19 @@ import {
 } from "lucide-react";
 
 export default function PaymentDashboard() {
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session.status === "unauthenticated") {
+      router.replace("/signin");
+    }
+  }, [session.status, router]);
+
+  if (session.status === "unauthenticated") {
+    return null;
+  }
+
   const [accountBalance, setAccountBalance] = useState(0);
   const [news, setNews] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(true);

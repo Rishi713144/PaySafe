@@ -2,12 +2,13 @@
 
 import { Button } from "./button";
 import { ShieldCheck, User as UserIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface AppbarProps {
     user?: {
         name?: string | null;
     },
-    // Fixed: Replaced 'any' with proper function type signatures
+    
     onSignin: () => void;
     onSignout: () => void;
 }
@@ -17,6 +18,16 @@ export const Appbar = ({
     onSignin,
     onSignout
 }: AppbarProps) => {
+    const [visitorCount, setVisitorCount] = useState(14203);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("payment_app_visitor_count");
+        const current = stored ? parseInt(stored) : 14203;
+        const next = current + 1;
+        setVisitorCount(next);
+        localStorage.setItem("payment_app_visitor_count", next.toString());
+    }, []);
+
     return (
         <nav className="flex justify-between items-center px-6 py-3 border-b border-slate-200 bg-white sticky top-0 z-50">
             {/* Logo Section */}
@@ -49,11 +60,20 @@ export const Appbar = ({
                         </div>
                     )}
                     
-                    <Button 
-                        onClick={user ? onSignout : onSignin}
-                    >
-                        {user ? "Logout" : "Sign In"}
-                    </Button>
+                    {user ? (
+                         <Button onClick={onSignout}>Logout</Button>
+                    ) : (
+                         <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
+                             <div className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </div>
+                            <div className="flex flex-col leading-none">
+                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Visitors</span>
+                                <span className="text-sm font-bold text-slate-700 font-mono">{visitorCount.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </nav>
