@@ -1,24 +1,27 @@
 "use client";
 
-import { Button } from "@repo/ui/button";
 import { TextInput } from "@repo/ui/textinput";
 import { useState } from "react";
 import { p2pTransfer } from "../app/lib/actions/p2pTransfer";
 import { ArrowRight, Send } from "lucide-react";
+import { TransactionStatusCard } from "@repo/ui/transaction-status-card";
 
 export function SendCard() {
   const [number, setNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showStatus, setShowStatus] = useState<"success" | "failure" | null>(null);
+  const [txDetails, setTxDetails] = useState<any>(null);
 
   const isDisabled = !number || !amount || loading;
 
   const handleTransfer = async () => {
     if (isDisabled) return;
 
-    // Reset error
+    // Reset state
     setError("");
+    setShowStatus(null);
 
     // Validate amount
     const amountValue = Number(amount);
@@ -32,24 +35,56 @@ export function SendCard() {
       const result = await p2pTransfer(number, amountValue * 100);
       
       if (result.success) {
-        alert("Transfer successful");
+        setTxDetails({
+            amount: amountValue * 100,
+            receiptId: "PAY-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            date: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+            recipientNumber: number,
+        });
+        setShowStatus("success");
         setNumber("");
         setAmount("");
       } else {
         setError(result.message);
+        setTxDetails({
+            amount: amountValue * 100,
+            receiptId: "ERR-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            date: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+            recipientNumber: number,
+            message: result.message
+        });
+        setShowStatus("failure");
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
+      setShowStatus("failure");
     } finally {
       setLoading(false);
     }
   };
 
+  if (showStatus) {
+    return (
+        <div className="flex justify-center items-center py-4">
+            <TransactionStatusCard
+                status={showStatus}
+                amount={txDetails.amount}
+                receiptId={txDetails.receiptId}
+                date={txDetails.date}
+                recipientName="Recipient"
+                recipientNumber={txDetails.recipientNumber}
+                message={txDetails.message}
+                onClose={() => setShowStatus(null)}
+            />
+        </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+    <div className="space-y-6">
       <div className="flex items-center space-x-3 mb-6">
-        <div className="p-3 bg-indigo-50 rounded-full">
-            <Send className="w-6 h-6 text-indigo-600" />
+        <div className="p-3 bg-indigo-50 rounded-full text-indigo-600">
+            <Send className="w-6 h-6" />
         </div>
         <div>
             <h2 className="text-xl font-bold text-gray-900">Send Money</h2>
@@ -57,7 +92,7 @@ export function SendCard() {
         </div>
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-5">
         <TextInput
           label="Phone Number"
           placeholder="Enter recipient's number"
@@ -83,15 +118,14 @@ export function SendCard() {
         )}
 
         <div className="pt-2">
-            <Button
+            <button
                 onClick={handleTransfer}
                 disabled={isDisabled}
+                className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold transition-all hover:bg-slate-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-                <div className="flex items-center justify-center space-x-2">
-                    <span>{loading ? "Processing..." : "Send Securely"}</span>
-                    {!loading && <ArrowRight className="w-4 h-4" />}
-                </div>
-            </Button>
+                <span>{loading ? "Processing..." : "Send Securely"}</span>
+                {!loading && <ArrowRight className="w-4 h-4" />}
+            </button>
         </div>
         
         <div className="text-sm text-gray-400 text-center">

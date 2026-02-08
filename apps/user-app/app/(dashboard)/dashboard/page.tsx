@@ -3,12 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import AnalyticsDashboard from "../../../components/AnalyticsDashboard";
 import {
-  Plus,
-  Download,
   CheckCircle2,
-  ExternalLink,
-  Newspaper,
   TrendingUp,
   ArrowUpRight,
 } from "lucide-react";
@@ -27,20 +24,12 @@ export default function PaymentDashboard() {
     return null;
   }
 
-  const [accountBalance, setAccountBalance] = useState(0);
-  const [news, setNews] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(true);
 
   useEffect(() => {
     async function syncDashboard() {
       try {
-        const [accountData, newsData] = await Promise.all([
-          getLiveAccountData(),
-          getRealtimeFinancialNews(),
-        ]);
-
-        setAccountBalance(accountData.currentBalance);
-        setNews(newsData);
+        await getLiveAccountData();
       } catch (err) {
         console.error("Dashboard Sync Failed", err);
       } finally {
@@ -49,12 +38,6 @@ export default function PaymentDashboard() {
     }
     syncDashboard();
   }, []);
-
-  const formatINR = (amount: number) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(amount);
 
   if (isSyncing) return <SyncingState />;
 
@@ -69,30 +52,7 @@ export default function PaymentDashboard() {
               Overview of your payments & financial activity
             </p>
           </div>
-
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-              <Plus size={16} /> Add Money
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
-              <Download size={16} /> Download Report
-            </button>
-          </div>
         </header>
-
-        {/* Balance Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg">
-          <p className="text-xs uppercase tracking-widest text-blue-100">
-            Total Balance
-          </p>
-          <h2 className="text-4xl font-bold mt-2">
-            {formatINR(accountBalance)}
-          </h2>
-          <div className="mt-4 flex items-center gap-2 text-sm text-blue-100">
-            <TrendingUp size={16} />
-            <span>+4.2% from last month</span>
-          </div>
-        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -113,20 +73,9 @@ export default function PaymentDashboard() {
           />
         </div>
 
-        {/* News */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Newspaper className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-slate-800">
-              Market & Policy Updates
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {news.map((item, idx) => (
-              <NewsCard key={idx} item={item} />
-            ))}
-          </div>
+        {/* Analytics Section */}
+        <section className="bg-slate-100/50 rounded-3xl p-8 border border-slate-200/60 shadow-inner">
+          <AnalyticsDashboard />
         </section>
       </div>
     </div>
@@ -159,31 +108,6 @@ function StatCard({
   );
 }
 
-function NewsCard({ item }: { item: any }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
-      <div className="flex justify-between mb-3">
-        <span className="text-[10px] font-bold px-2 py-1 rounded bg-blue-50 text-blue-600 uppercase">
-          {item.category}
-        </span>
-        <ExternalLink size={14} className="text-slate-300" />
-      </div>
-
-      <h3 className="font-semibold text-slate-800 leading-snug">
-        {item.headline}
-      </h3>
-      <p className="text-xs text-slate-500 mt-2 line-clamp-2">
-        {item.summary}
-      </p>
-
-      <div className="mt-4 flex justify-between text-[10px] font-semibold text-slate-400 uppercase">
-        <span>{item.source}</span>
-        <span>{item.time}</span>
-      </div>
-    </div>
-  );
-}
-
 function SyncingState() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
@@ -196,42 +120,6 @@ function SyncingState() {
 }
 
 /* ---------- Mock APIs ---------- */
-
-async function getRealtimeFinancialNews() {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          headline:
-            "RBI Maintains Repo Rate at 6.5%, Focuses on Inflation Control",
-          summary:
-            "The MPC continues its cautious stance amid global uncertainties.",
-          category: "Policy",
-          source: "Financial Times",
-          time: "12m ago",
-        },
-        {
-          headline:
-            "Tech Stocks Rally as AI Spending Accelerates Globally",
-          summary:
-            "Major semiconductor firms gain momentum on cloud demand.",
-          category: "Markets",
-          source: "Bloomberg",
-          time: "45m ago",
-        },
-        {
-          headline:
-            "Rupee Strengthens Against Dollar on Capital Inflows",
-          summary:
-            "Domestic equities and FII inflows support INR.",
-          category: "Forex",
-          source: "Reuters",
-          time: "1h ago",
-        },
-      ]);
-    }, 1000);
-  });
-}
 
 async function getLiveAccountData() {
   return new Promise<{ currentBalance: number }>((resolve) => {

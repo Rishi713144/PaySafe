@@ -33,7 +33,7 @@ export const Button = ({
             ? "cursor-not-allowed opacity-60"
             : "hover:brightness-110 active:scale-[0.98]"
         }
-        bg-gradient-to-r from-blue-600 to-indigo-600
+        bg-indigo-600 bg-gradient-to-r from-blue-600 to-indigo-600
         focus:outline-none focus:ring-4 focus:ring-blue-300
       `}
     >

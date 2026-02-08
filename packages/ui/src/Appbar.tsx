@@ -6,7 +6,7 @@ interface AppbarProps {
     user?: {
         name?: string | null;
     },
-    
+
     onSignin: () => void;
     onSignout: () => void;
 }
@@ -27,9 +27,7 @@ export const Appbar = ({
                     <span className="text-lg font-black tracking-tight text-slate-900 leading-none">
                         PaySafe
                     </span>
-                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-[0.2em] mt-0.5">
-                        Enterprise
-                    </span>
+                    
                 </div>
             </div>
 
@@ -41,9 +39,9 @@ export const Appbar = ({
                             <span className="text-sm font-bold text-slate-900 leading-none">
                                 {user.name}
                             </span>
-                            <div className="flex items-center gap-1.5 mt-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                            <div className="flex items-center gap-1 mt-0.5">
+                                <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                                <span className="font-bold uppercase tracking-wider" style={{ fontSize: '9px', color: '#10b981' }}>
                                     Online
                                 </span>
                             </div>
@@ -53,8 +51,8 @@ export const Appbar = ({
                             <div className="h-10 w-10 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center border border-slate-200 shadow-sm transition-hover hover:border-indigo-200">
                                 <UserIcon className="w-5 h-5 text-slate-600" />
                             </div>
-                            
-                            <button 
+
+                            <button
                                 onClick={onSignout}
                                 className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
                             >
@@ -63,7 +61,7 @@ export const Appbar = ({
                         </div>
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={onSignin}
                         className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95"
                     >
