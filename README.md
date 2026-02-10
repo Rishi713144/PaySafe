@@ -32,11 +32,7 @@ pnpm install
 
 ### 3. Set Up PostgreSQL
 
-Run PostgreSQL locally using Docker, or use a managed service like [Neon](https://neon.tech):
-
-```bash
-docker run -e POSTGRES_PASSWORD=admin -d -p 5432:5432 postgres
-```
+Run PostgreSQL locally or use a managed service like [Neon](https://neon.tech).
 
 ### 4. Configure Environment Variables
 
@@ -82,8 +78,7 @@ PaySafe/
 │   ├── store/             # Shared state management
 │   ├── eslint-config/     # Shared ESLint configurations
 │   └── typescript-config/ # Shared TypeScript configurations
-├── docker/                # Dockerfiles for each app
-└── docker-compose.yml     # Docker Compose for local development
+└── packages/              # (see above)
 ```
 
 ---
@@ -99,28 +94,12 @@ PaySafe/
 | ORM          | Prisma                            |
 | Styling      | Tailwind CSS                      |
 | Auth         | NextAuth.js                       |
-| Containerization | Docker + Docker Compose       |
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please read the **[Contributing Guide](CONTRIBUTING.md)** before getting started. It covers:
-
-- Forking and cloning the repository
-- Branch naming conventions
-- Commit message format
-- Code style and linting expectations
-- What files should never be committed
-- CI requirements for merging
-
----
-
-## Pull Request Guidelines
-
-When you open a Pull Request, a **[template](.github/pull_request_template.md)** will load automatically. Please fill it out completely — including the description, testing steps, and all checklists.
-
-PRs that are incomplete, untested, or fail CI will not be reviewed.
+Contributions are welcome. Please read the **[Contributing Guide](CONTRIBUTING.md)** before getting started.
 
 ---
 

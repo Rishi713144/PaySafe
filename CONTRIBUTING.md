@@ -13,7 +13,7 @@ Thank you for considering a contribution to **PaySafe**. This guide outlines the
 - [Creating a Pull Request](#creating-a-pull-request)
 - [PR Best Practices](#pr-best-practices)
 - [What NOT to Commit](#what-not-to-commit)
-- [CI and Merge Requirements](#ci-and-merge-requirements)
+
 
 ---
 
@@ -221,21 +221,6 @@ The following must **never** be committed to the repository:
 These entries are already in `.gitignore`. If you notice something missing, open a PR to update it.
 
 > Run `git status` before committing and review the staged files carefully.
-
----
-
-## CI and Merge Requirements
-
-All pull requests must pass the following before they are eligible for merge:
-
-- **Linting** — No ESLint errors or warnings
-- **Build** — Successful compilation across all apps and packages
-- **Type checking** — No TypeScript errors
-- **Tests** — All existing tests pass; new features should include tests where applicable
-
-**PRs that fail CI will not be reviewed or merged.** Fix all issues before requesting a review.
-
-A pull request requires at least **one approving review** from a maintainer before it can be merged.
 
 ---
 
