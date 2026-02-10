@@ -21,7 +21,8 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 
 # Generate Prisma client (v7: generates to packages/db/generated/)
-RUN pnpm --filter @repo/db run build
+# DATABASE_URL is not needed for generate, but prisma.config.ts loads it
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm --filter @repo/db run build
 
 # Build the webhook server (esbuild bundles everything into dist/index.js)
 RUN pnpm --filter bank-webhook run build

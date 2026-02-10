@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { defineConfig, env } from 'prisma/config'
+import { defineConfig } from 'prisma/config'
 
 export default defineConfig({
   // Path to the Prisma schema
@@ -11,8 +11,9 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
 
-  // Database connection (reads DATABASE_URL from environment)
+  // Database connection — uses process.env with a dummy fallback so
+  // `prisma generate` works during Docker build (no real DB needed).
   datasource: {
-    url: env('DATABASE_URL'),
+    url: process.env.DATABASE_URL ?? 'postgresql://dummy:dummy@localhost:5432/dummy',
   },
 })
