@@ -1,8 +1,8 @@
-import { PrismaClient } from './generated/prisma/client.js'
+import { PrismaClient } from './generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 // Re-export all Prisma types from the generated client
-export * from './generated/prisma/client.js'
+export * from './generated/prisma/client'
 
 const prismaClientSingleton = () => {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })

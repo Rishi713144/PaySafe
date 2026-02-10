@@ -47,4 +47,4 @@ USER webhook
 EXPOSE 3003
 ENV PORT=3003
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/index.mjs"]
