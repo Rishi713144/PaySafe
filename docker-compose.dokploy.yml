@@ -1,0 +1,144 @@
+version: "3.8"
+
+# =====================================================================
+#  Payments-App – Dokploy Docker Compose
+# =====================================================================
+#  Dokploy uses Traefik as its reverse proxy. Services that need to be
+#  publicly accessible declare Traefik labels below.
+#
+#  Replace these placeholder domains with your real domains:
+#    - app.yourdomain.com      → user-app  (Next.js)
+#    - merchant.yourdomain.com → merchant-app (Next.js)
+#    - webhook.yourdomain.com  → bank-webhook (Express)
+#
+#  Dokploy will auto-provision SSL certificates via Let's Encrypt.
+# =====================================================================
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Database migrations (runs once then exits) ──────────────────
+  db-migrate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.user-app
+      target: installer
+    command: sh -c "pnpm --filter @repo/db dlx prisma generate && pnpm --filter @repo/db dlx prisma migrate deploy"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # ── User App (Next.js) ─────────────────────────────────────────
+  user-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.user-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      NEXTAUTH_URL: https://${USER_APP_DOMAIN}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    labels:
+      # ── Traefik routing ──
+      - "traefik.enable=true"
+      - "traefik.http.routers.user-app.rule=Host(`${USER_APP_DOMAIN}`)"
+      - "traefik.http.routers.user-app.entrypoints=websecure"
+      - "traefik.http.routers.user-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.user-app.loadbalancer.server.port=3000"
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.user-app-http.rule=Host(`${USER_APP_DOMAIN}`)"
+      - "traefik.http.routers.user-app-http.entrypoints=web"
+      - "traefik.http.routers.user-app-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    networks:
+      - internal
+      - dokploy-network
+
+  # ── Merchant App (Next.js) ─────────────────────────────────────
+  merchant-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.merchant-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      NEXTAUTH_URL: https://${MERCHANT_APP_DOMAIN}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.merchant-app.rule=Host(`${MERCHANT_APP_DOMAIN}`)"
+      - "traefik.http.routers.merchant-app.entrypoints=websecure"
+      - "traefik.http.routers.merchant-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.merchant-app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.merchant-app-http.rule=Host(`${MERCHANT_APP_DOMAIN}`)"
+      - "traefik.http.routers.merchant-app-http.entrypoints=web"
+      - "traefik.http.routers.merchant-app-http.middlewares=redirect-to-https"
+    networks:
+      - internal
+      - dokploy-network
+
+  # ── Bank Webhook (Express) ─────────────────────────────────────
+  bank-webhook:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bank-webhook
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bank-webhook.rule=Host(`${WEBHOOK_DOMAIN}`)"
+      - "traefik.http.routers.bank-webhook.entrypoints=websecure"
+      - "traefik.http.routers.bank-webhook.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bank-webhook.loadbalancer.server.port=3003"
+      - "traefik.http.routers.bank-webhook-http.rule=Host(`${WEBHOOK_DOMAIN}`)"
+      - "traefik.http.routers.bank-webhook-http.entrypoints=web"
+      - "traefik.http.routers.bank-webhook-http.middlewares=redirect-to-https"
+    networks:
+      - internal
+      - dokploy-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  # Internal network for inter-service communication (db, apps)
+  internal:
+    driver: bridge
+  # Dokploy's external Traefik network – MUST exist before deploying
+  dokploy-network:
+    external: true

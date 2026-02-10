@@ -20,7 +20,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY --from=pruner /app/out/full/ .
 
-# Generate Prisma client
+# Generate Prisma client (v7: generates to packages/db/generated/)
 RUN pnpm --filter @repo/db run build
 
 # Build the webhook server (esbuild bundles everything into dist/index.js)
@@ -38,9 +38,8 @@ RUN adduser --system --uid 1001 webhook
 # Copy the bundled output (esbuild produces a single file)
 COPY --from=builder /app/apps/bank-webhook/dist ./dist
 
-# esbuild bundles @prisma/client code but the engine binary is still needed
-COPY --from=builder /app/node_modules/.pnpm/*/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/.pnpm/*/node_modules/@prisma ./node_modules/@prisma
+# Prisma v7: generated client is in packages/db/generated/ (not node_modules)
+COPY --from=builder /app/packages/db/generated ./packages/db/generated
 
 USER webhook
 

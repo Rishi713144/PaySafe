@@ -11,6 +11,7 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 
 # Testing
 coverage
@@ -44,3 +45,4 @@ yarn-error.log*
 
 # Logs
 *.log
+DOKPLOY-DEPLOY.md

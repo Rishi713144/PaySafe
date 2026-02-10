@@ -22,10 +22,10 @@ RUN pnpm install --frozen-lockfile
 # Copy source and build
 COPY --from=pruner /app/out/full/ .
 
-# Generate Prisma client
+# Generate Prisma client (v7: generates to packages/db/generated/)
 RUN pnpm --filter @repo/db run build
 
-# Build the app
+# Build the app (prisma generate is no longer auto-triggered)
 RUN pnpm dlx turbo build --filter=docs
 
 # ── Production runner ────────────────────────────────────────────
